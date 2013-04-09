@@ -57,4 +57,8 @@ public class SplayTree<K, V> {
         x.parent = y;
     }
     
+    public void add(K key, V value) {
+        
+    }
+    
 }

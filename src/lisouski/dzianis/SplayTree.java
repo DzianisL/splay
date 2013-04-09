@@ -11,6 +11,7 @@ package lisouski.dzianis;
 public class SplayTree<K extends Comparable<K>, V> {
     
     private Node<K, V> root;
+    private int size;
     
     private static final class Node<K extends Comparable<K>, V> {
         K key;
@@ -37,8 +38,12 @@ public class SplayTree<K extends Comparable<K>, V> {
         
         Node curNode = root;
         V returnValue = null;
+        boolean isNewKey = true;
         
         for(;;) {
+            if (curNode == null || curNode.key == null) {
+                break;
+            }
             int compareResult = curNode.key.compareTo(key);
             if (compareResult == 0) {
                 if (curNode.parent != null) {
@@ -56,6 +61,7 @@ public class SplayTree<K extends Comparable<K>, V> {
                 if (curNode.left == null) {
                     curNode.left = newNode;
                     newNode.parent = curNode;
+                    isNewKey = false;
                     break;
                 }
                 curNode = curNode.left;
@@ -63,10 +69,15 @@ public class SplayTree<K extends Comparable<K>, V> {
                 if (curNode.right == null) {
                     curNode.right = newNode;
                     newNode.parent = curNode;
+                    isNewKey = false;
                     break;
                 }
                 curNode = curNode.parent;
             }
+        }
+        
+        if (isNewKey) {
+            size++;
         }
         
         splay(newNode);
@@ -74,14 +85,15 @@ public class SplayTree<K extends Comparable<K>, V> {
         return returnValue;
     }
     
-    public V find (K key) {
+    private Node findNode (K key) {
         Node curNode = root;
-        V returnValue = null;
+        Node returnNode = null;
         
         while (curNode != null) {
             int compareResult = curNode.key.compareTo(key);
             if (compareResult == 0) {
-                returnValue = (V) curNode.value;
+                returnNode = curNode;
+                break;
             } else if (compareResult > 0) {
                 curNode = curNode.left;
             } else {
@@ -89,7 +101,30 @@ public class SplayTree<K extends Comparable<K>, V> {
             }
         }
         
-        return returnValue;
+        return returnNode;
+    }
+    
+    public V find (K key) {
+        Node foundNode = findNode(key);
+        return foundNode == null ? null : (V) foundNode.key;
+    }
+    
+    public int size () {
+        return size;
+    }
+    
+    public V remove (K key) {
+        Node delNode = findNode(key);
+        
+        if (delNode == null) {
+            return null;
+        }
+        
+        splay(delNode);
+        
+        // merge and split
+        
+        return (V) delNode.value;
     }
     
     // Rotations
@@ -134,9 +169,9 @@ public class SplayTree<K extends Comparable<K>, V> {
         while (x.parent != null) {
             if (x.parent.parent == null) { // Zig
                 if (x.parent.left == x) {
-                    rightRotation(x);
+                    rightRotation(x.parent);
                 } else {
-                    leftRotation(x);
+                    leftRotation(x.parent);
                 }
             } else if (x.parent.left == x && x.parent.parent.left == x.parent) { // ZigZig 1
                 rightRotation(x.parent.parent);
@@ -144,10 +179,10 @@ public class SplayTree<K extends Comparable<K>, V> {
             } else if (x.parent.right == x && x.parent.parent.right == x.parent) { // ZigZig 2
                 leftRotation(x.parent.parent);
                 leftRotation(x.right);
-            } else if (x.parent.left == x) {
+            } else if (x.parent.left == x) { // ZigZag 1
                 rightRotation(x.parent);
                 leftRotation(x.parent);
-            } else {
+            } else {                         // ZigZag 2
                 leftRotation(x.parent);
                 rightRotation(x.parent);
             }

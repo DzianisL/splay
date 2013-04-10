@@ -4,6 +4,8 @@
  */
 package lisouski.dzianis;
 
+import java.util.TreeMap;
+
 /**
  *
  * @author DenisLesovsky
@@ -122,9 +124,25 @@ public class SplayTree<K extends Comparable<K>, V> {
         
         splay(delNode);
         
-        // merge and split
+        root = merge(delNode.left, delNode.right);
         
         return (V) delNode.value;
+    }
+    
+    private Node maxNodeInSubTree (Node subTreeRoot) {
+        while (subTreeRoot.right != null) {
+            subTreeRoot = subTreeRoot.right;
+        }
+        
+        return subTreeRoot;
+    }
+    
+    // Merge and split operations
+    private Node merge (Node firstTree, Node secondTree) {
+        firstTree = maxNodeInSubTree(firstTree);
+        splay(firstTree);
+        firstTree.right = secondTree;
+        return firstTree;
     }
     
     // Rotations
